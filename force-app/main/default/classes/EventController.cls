@@ -2,8 +2,6 @@ public with sharing class EventController {
 
     @AuraEnabled
     public static Event selectEventRecord(String recordId, String fieldsetName){
-        System.debug('rec id' + recordId);
-        System.debug('fs name main method' + fieldsetName);
         String fieldNames = selectQueryFieldsFromFieldset(fieldsetName);
         System.debug(fieldNames);
         Event dbQueryResult = Database.query('SELECT ' + fieldNames + ' FROM Event WHERE Id =: recordId');
@@ -11,18 +9,16 @@ public with sharing class EventController {
     }
 
     private static String selectQueryFieldsFromFieldset(String fieldsetName) {
-        System.debug('fs name '+fieldsetName);
         Schema.FieldSet fieldset = getFieldset(fieldsetName);
-        System.debug('fielset obj');
-        System.debug(fieldset);
         List<String> fieldNames = new List<String>();
         List<Schema.FieldSetMember> fields = fieldset.getFields();
+
         for(Schema.FieldSetMember fsm : fields) {
           fieldNames.add(fsm.getFieldPath());
         }
         
         String res =  String.join(fieldNames, ',');
-        System.debug('fields '+res);
+        System.debug('fields '+ res);
         return res;
     }
 
@@ -45,20 +41,15 @@ public with sharing class EventController {
             System.debug('tex!');
             return false;
         }
-        
-        //Object o = JSON.deserializeUntyped(eventJSON);
-        System.debug('Event deser-d');
-        System.debug(event);
+
         try {
             event.isAllDayEvent = true;
             upsert event;
         } catch(System.DmlException dmlex) {
-            System.debug('DMLEXEP');
             System.debug(dmlex);
             return false;
         }
         
         return true;
-
     }
 }

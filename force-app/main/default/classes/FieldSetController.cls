@@ -9,12 +9,12 @@ public with sharing class FieldSetController {
         try {
             // Handle Errors
             System.debug('### getMetadata objectTypeName >>> '+objectTypeName);
-            if (String.isBlank(objectTypeName)) newException('objectTypeName is required to get fieldset', null);
-            // Get the SObject
+            if (String.isBlank(objectTypeName)) newException('objectTypeName is required to get fieldset', null);           
             sObjectResult = Schema.getGlobalDescribe().get(objectTypeName).getDescribe();
             System.debug('### getMetadata sObjectResult >>> '+sObjectResult);
             response.sObjectName = sObjectResult.getName();
         } catch (Exception ex) {
+            //raise aura exception
             newException(ex.getMessage(), ex.getStackTraceString());
         }
         // Return metadata
@@ -26,39 +26,26 @@ public with sharing class FieldSetController {
         // Setup response object
         MetadataResponse response = new MetadataResponse();
         try {
-            // Get the SObject
+            // Get SObject
             response = getObjectMetadata(objectTypeName);
             System.debug('### getMetadata sObjectResult >>> '+sObjectResult);
             response.sObjectName = sObjectResult.getName();
             // Handle Errors
             System.debug('### getMetadata fieldSetName >>> '+fieldSetName);
-            if (String.isBlank(fieldsetName)) newException('Fieldset Name required to get Field Metadata', null);
-            // Get the FieldSets
-            Map<String, FieldSet> fieldSets = sObjectResult.fieldSets.getMap();
-            // Check if we have a fieldset with that name
+            if (String.isBlank(fieldsetName)) newException('Fieldset Name required to get Field Metadata', null);           
+            Map<String, FieldSet> fieldSets = sObjectResult.fieldSets.getMap();            
             if (fieldSets.containsKey(fieldSetName)) {
-                // Get the Object fields
                 Map<String, SObjectField> fields = sObjectResult.fields.getMap();
-                // Check if the object has a record type id field 
-                if (fields.containsKey('RecordTypeId')) {
-                    // Get the records record type Id
-                    //response.recordTypeId = (String) ((SObject) Database.query('SELECT RecordTypeId FROM '+response.sObjectName)).get('RecordTypeId');
-                }
                 // Get the Label
                 response.fieldSetLabel = fieldSets.get(fieldSetName).getLabel();
                 System.debug('### getMetadata response.fieldSetLabel >>> '+response.fieldSetLabel);
-                // Construct a new list
                 response.fieldsMetadata = new List<String>();
-                // For each field in the FieldSet
-                for (FieldSetMember fieldSetMember : fieldSets.get(fieldSetName).getFields()) {
-                    // Get the path
+                for (FieldSetMember fieldSetMember : fieldSets.get(fieldSetName).getFields()) {                   
                     String fieldName = fieldSetMember.getFieldPath();
                     System.debug('### getMetadata fieldName >>> '+fieldName);
                     // We can't handle Relationship fields
                     if (!fieldName.contains('.')) {
-                        // Get the field describe
                         DescribeFieldResult fd = fields.get(fieldName).getDescribe();
-                        // If the current user has access to the field
                         System.debug('### getMetadata fd.isAccessible() >>> '+fd.isAccessible());
                         if (fd.isAccessible()) {
                             response.fieldsMetadata.add(JSON.serialize(

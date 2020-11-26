@@ -9,7 +9,6 @@ const getInputFieldAttributes = (field) => {
             break;
         case 'phone':
             fieldObject.isInput = true;
-            fieldObject.type = 'tel';
             fieldObject.pattern = '[0-9]+';
             break;
         case 'email':
